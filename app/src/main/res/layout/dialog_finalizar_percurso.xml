@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <ImageView
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_localizacao"
+            android:contentDescription="Finalizar percurso"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FINALIZAR PERCURSO"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="#1B5E20" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confira os dados antes de encerrar"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:textColor="#757575"
+            android:layout_marginBottom="16dp" />
+
+        <!-- VEÍCULO -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="VEÍCULO"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/txtFinalVeiculo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="10dp" />
+
+        <!-- MOTORISTA -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MOTORISTA"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/txtFinalMotorista"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="12dp" />
+
+        <!-- INÍCIO -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📍 INÍCIO DO PERCURSO"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#1B5E20"
+            android:layout_marginBottom="3dp" />
+
+        <TextView
+            android:id="@+id/txtFinalInicio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="14sp"
+            android:textColor="#424242"
+            android:layout_marginBottom="12dp" />
+
+        <!-- FINAL -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🏁 FINAL DO PERCURSO"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#C62828"
+            android:layout_marginBottom="3dp" />
+
+        <TextView
+            android:id="@+id/txtFinalDestino"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="14sp"
+            android:textColor="#424242"
+            android:layout_marginBottom="12dp" />
+
+        <!-- KM -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DISTÂNCIA PERCORRIDA"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/txtKmPercorrido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0,00 km"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1B5E20"
+            android:layout_marginBottom="14dp" />
+
+        <!-- BOTÕES -->
+
+        <Button
+            android:id="@+id/btnConfirmarFinalizacao"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="FINALIZAR PERCURSO"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:background="@drawable/botao_bonito" />
+
+        <Button
+            android:id="@+id/btnCancelarFinalizacao"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="CANCELAR"
+            android:background="@drawable/botao_bonito"
+            android:layout_marginTop="5dp" />
+
+    </LinearLayout>
+
+</ScrollView>
