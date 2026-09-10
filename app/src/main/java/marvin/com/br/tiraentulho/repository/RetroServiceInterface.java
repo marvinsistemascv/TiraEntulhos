@@ -2,6 +2,7 @@ package marvin.com.br.tiraentulho.repository;
 
 import marvin.com.br.tiraentulho.model.MotoristaModel;
 import marvin.com.br.tiraentulho.model.SincronizacaoRequest;
+import marvin.com.br.tiraentulho.model.SincronizacaoResponse;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -11,10 +12,11 @@ import retrofit2.http.Query;
 
 public interface RetroServiceInterface {
 
-
-    @POST("/app_entulho/sincronizar_rotas")
-    Call<ResponseBody> sincronizarRotas(@Body SincronizacaoRequest request);
-
     @GET("/app_obras/pegar_operador_cpf")
     Call<MotoristaModel> pegar_motorista_cpf(@Query("cpf") String cpf);
+
+    @POST("/app_entulho/sincronizar_rotas")
+    Call<SincronizacaoResponse> sincronizarRotas(
+            @Body SincronizacaoRequest request
+    );
 }

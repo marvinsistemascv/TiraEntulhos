@@ -1,27 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <group android:id="@+id/grupo_percursos">
+        <item
+            android:id="@+id/menu_option_0"
+            android:title="Percursos"/>
+    </group>
 
-    <item
-        android:id="@+id/menu_option_0"
-        android:icon="@drawable/divider_line"
-        android:title="Configuração" />
+    <group android:id="@+id/grupo_sincronizar">
+        <item
+            android:id="@+id/menu_option_1"
+            android:title="Sincronizar"/>
+    </group>
 
-    <item
-        android:id="@+id/menu_option_1"
-        android:icon="@drawable/divider_line"
-        android:title="Percursos"/>
-
-
-    <item
-        android:id="@+id/menu_option_2"
-        android:icon="@drawable/divider_line"
-        android:title="Sincronizar"/>
-
-    <item
-        android:id="@+id/menu_option_3"
-        android:icon="@drawable/divider_line"
-        android:title="Zerar Sincronizados"/>
+    <group android:id="@+id/grupo_resincronizar">
+        <item
+            android:id="@+id/menu_option_2"
+            android:title="Resincronizar"/>
+    </group>
 
 </menu>

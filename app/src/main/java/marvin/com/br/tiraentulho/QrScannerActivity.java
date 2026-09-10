@@ -41,6 +41,8 @@ public class QrScannerActivity extends AppCompatActivity
 
         barcodeView = findViewById(R.id.barcode_scanner);
 
+        this.setTitle("Ler Qrcode");
+
         // Só QR Code
         List<BarcodeFormat> formats = Collections.singletonList(BarcodeFormat.QR_CODE);
         barcodeView.getBarcodeView().setDecoderFactory(new DefaultDecoderFactory(formats));

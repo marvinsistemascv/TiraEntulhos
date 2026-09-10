@@ -1,7 +1,11 @@
 package marvin.com.br.tiraentulho;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -17,7 +21,6 @@ import marvin.com.br.tiraentulho.model.PercursoModel;
 
 public class MapaRotaActivity extends AppCompatActivity {
 
-    private TextView txtInfo;
     private String uuidRota;
     private AppDatabase db;
     private WebView webView;
@@ -31,7 +34,7 @@ public class MapaRotaActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_mapa_rota);
 
-        txtInfo = findViewById(R.id.txt_titulo);
+        this.setTitle("Percurso");
 
         configurarMapa();
 
@@ -68,7 +71,17 @@ public class MapaRotaActivity extends AppCompatActivity {
                 .setOnClickListener(v -> finish());
 
 
-        carregarPercurso();
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setIcon(R.drawable.ic_loading);
+        progressDialog.setMessage("Carregando...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        // Aguarda 5 segundos
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            carregarPercurso();
+            progressDialog.dismiss();
+        }, 5000);
+
     }
 
     private void configurarMapa() {
@@ -153,10 +166,6 @@ public class MapaRotaActivity extends AppCompatActivity {
                     if (percurso == null ||
                             percurso.isEmpty()) {
 
-                        txtInfo.setText(
-                                "Nenhum ponto de GPS encontrado."
-                        );
-
                         Toast.makeText(
                                 MapaRotaActivity.this,
                                 "Não há percurso registrado para esta rota.",
@@ -171,10 +180,6 @@ public class MapaRotaActivity extends AppCompatActivity {
             } catch (Exception e) {
 
                 runOnUiThread(() -> {
-
-                    txtInfo.setText(
-                            "Erro ao carregar percurso."
-                    );
 
                     Toast.makeText(
                             MapaRotaActivity.this,

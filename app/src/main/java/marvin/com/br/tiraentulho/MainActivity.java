@@ -12,6 +12,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -45,6 +46,7 @@ import marvin.com.br.tiraentulho.model.MotoristaModel;
 import marvin.com.br.tiraentulho.model.PercursoModel;
 import marvin.com.br.tiraentulho.model.RotaModel;
 import marvin.com.br.tiraentulho.model.SincronizacaoRequest;
+import marvin.com.br.tiraentulho.model.SincronizacaoResponse;
 import marvin.com.br.tiraentulho.repository.RetroServiceInterface;
 import marvin.com.br.tiraentulho.service.RastreamentoService;
 import marvin.com.br.tiraentulho.util.DataHora;
@@ -552,6 +554,8 @@ public class MainActivity extends AppCompatActivity {
                 LocationServices.getFusedLocationProviderClient(this);
 
         ImageView btn_rota = findViewById(R.id.btn_brasao);
+
+        this.setTitle("Home");
 
 
         txtPlacaMelosa = findViewById(R.id.txt_placa_melosa);
@@ -1203,18 +1207,10 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.menu_option_0) {
-
+            ver_minhas_rotas();
             return true;
         }
         if (id == R.id.menu_option_1) {
-
-            ver_minhas_rotas();
-
-            return true;
-        }
-
-
-        if (id == R.id.menu_option_2) {
 
             new AlertDialog.Builder(this)
                     .setTitle("Sincronizar")
@@ -1224,12 +1220,23 @@ public class MainActivity extends AppCompatActivity {
                     })
                     .setNegativeButton("Cancelar", (d, which) -> d.dismiss())
                     .show();
-
             return true;
         }
 
-        if (id == R.id.menu_option_3) {
-            repreparar_registros();
+
+        if (id == R.id.menu_option_2) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Resincronizar")
+                    .setIcon(R.drawable.ic_atencao)
+                    .setMessage("Este procedimento vai preparar todos os registros para serem reenviados! Confirma?")
+                    .setPositiveButton("Sim, confirmo", (d, which) -> {
+                        repreparar_registros();
+                    })
+                    .setNegativeButton("Cancelar", (d, which) -> d.dismiss())
+                    .show();
+
+
             return true;
         }
 
@@ -1260,19 +1267,26 @@ public class MainActivity extends AppCompatActivity {
             List<RotaModel> rotas = db.rotaDAO().pegar_rotas_realizadas();
             List<PercursoModel> percurso = db.percursoDAO().pegarPercursoRotaSincronizar();
 
-            if ((rotas == null) &&
-                    (percurso == null || percurso.isEmpty())) {
+            boolean semRotas =
+                    rotas == null || rotas.isEmpty();
+
+            boolean semPercursos =
+                    percurso == null || percurso.isEmpty();
+
+            if (semRotas && semPercursos) {
 
                 runOnUiThread(() -> {
+
                     progressDialog.dismiss();
+
                     new AlertDialog.Builder(MainActivity.this)
                             .setTitle("OPS")
-                            .setMessage("Não há rotas para sincronizar!")
+                            .setMessage("Não há dados para sincronizar!")
                             .setIcon(R.drawable.ic_atencao)
                             .setPositiveButton("OK", null)
-                            .create()
                             .show();
                 });
+
                 return;
             }
 
@@ -1281,56 +1295,145 @@ public class MainActivity extends AppCompatActivity {
 
             int totalRotas = rotas.size();
 
-            service.sincronizarRotas(request).enqueue(new Callback<ResponseBody>() {
+            service.sincronizarRotas(request).enqueue(new Callback<SincronizacaoResponse>() {
                 @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                public void onResponse(
+                        Call<SincronizacaoResponse> call,
+                        Response<SincronizacaoResponse> response) {
+
                     runOnUiThread(() -> progressDialog.dismiss());
 
-                    if (response.isSuccessful()) {
-                        // 🔹 chama método que atualiza 'sit' só após sucesso
-                        atualizarStatusLocal(rotas, percurso);
+                    if (!response.isSuccessful()) {
+
+                        String erroMsg = "Erro HTTP: " + response.code();
+
+                        try {
+                            if (response.errorBody() != null) {
+                                erroMsg += "\n" + response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        String msgFinal = erroMsg;
 
                         runOnUiThread(() -> {
                             new AlertDialog.Builder(MainActivity.this)
-                                    .setTitle("Sincronizado")
-                                    .setMessage(totalRotas + " rotas sincronizadas!")
-                                    .setIcon(R.drawable.ic_success)
-                                    .setPositiveButton("Ok, Fechar", (d, which) -> {
-                                        recreate();
-                                    })
-                                    .create()
+                                    .setTitle("ERRO")
+                                    .setMessage(msgFinal)
+                                    .setIcon(R.drawable.ic_erro)
+                                    .setPositiveButton("OK", null)
                                     .show();
-
-
                         });
 
-                    } else {
-                        try {
-                            String erroMsg = response.errorBody() != null
-                                    ? response.errorBody().string()
-                                    : "Erro desconhecido";
-
-                            runOnUiThread(() -> {
-                                new AlertDialog.Builder(MainActivity.this)
-                                        .setTitle("ERRO")
-                                        .setMessage("Falha: " + erroMsg)
-                                        .setIcon(R.drawable.ic_erro)
-                                        .setPositiveButton("OK", null)
-                                        .create()
-                                        .show();
-                            });
-
-                        } catch (Exception e) {
-                            runOnUiThread(() -> showToastErro("Erro ao ler resposta: " + e.getMessage()));
-                        }
+                        return;
                     }
+
+                    SincronizacaoResponse resposta = response.body();
+
+                    // Não recebeu corpo
+                    if (resposta == null) {
+
+                        runOnUiThread(() -> {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("ERRO")
+                                    .setMessage("O servidor respondeu, mas não confirmou a sincronização.")
+                                    .setIcon(R.drawable.ic_erro)
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        });
+
+                        return;
+                    }
+
+                    // servidor não informou status ok
+                    if (!"ok".equalsIgnoreCase(resposta.getStatus())) {
+
+                        runOnUiThread(() -> {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("ERRO")
+                                    .setMessage("O servidor não confirmou a sincronização.")
+                                    .setIcon(R.drawable.ic_erro)
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        });
+
+                        return;
+                    }
+
+                    int totalRotasEnviadas =
+                            rotas == null ? 0 : rotas.size();
+
+                    int totalPercursosEnviados =
+                            percurso == null ? 0 : percurso.size();
+
+                    // CONFERE O QUE O SERVIDOR REALMENTE RECEBEU
+                    if (resposta.getRotas_recebidas() != totalRotasEnviadas
+                            ||
+                            resposta.getPercursos_recebidos() != totalPercursosEnviados) {
+
+                        runOnUiThread(() -> {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Sincronização incompleta")
+                                    .setMessage(
+                                            "Os dados enviados não foram confirmados integralmente pelo servidor."
+                                                    + "\n\nRotas enviadas: "
+                                                    + totalRotasEnviadas
+                                                    + "\nRotas recebidas: "
+                                                    + resposta.getRotas_recebidas()
+                                                    + "\n\nPercursos enviados: "
+                                                    + totalPercursosEnviados
+                                                    + "\nPercursos recebidos: "
+                                                    + resposta.getPercursos_recebidos()
+                                    )
+                                    .setIcon(R.drawable.ic_atencao)
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        });
+
+                        return;
+                    }
+
+                    // SOMENTE AGORA altera o banco local
+                    atualizarStatusLocal(rotas, percurso);
+
+                    runOnUiThread(() -> {
+
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Sincronizado")
+                                .setMessage(
+                                        totalRotasEnviadas
+                                                + " rotas e "
+                                                + totalPercursosEnviados
+                                                + " pontos sincronizados!"
+                                )
+                                .setIcon(R.drawable.ic_success)
+                                .setPositiveButton("Ok, Fechar", (d, which) -> {
+                                    recreate();
+                                })
+                                .show();
+                    });
                 }
 
                 @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                public void onFailure(
+                        Call<SincronizacaoResponse> call,
+                        Throwable t) {
+
                     runOnUiThread(() -> {
+
                         progressDialog.dismiss();
-                        showToastErro("Falha na comunicação: " + t.getMessage());
+
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Falha na comunicação")
+                                .setMessage(
+                                                  "Não foi possível confirmar a sincronização.\n\n"
+                                                + "Não foi possível a confirmação do servidor\n\n"
+                                                + "\n\nOs dados permanecerão pendentes para nova tentativa."
+                                )
+                                .setIcon(R.drawable.ic_erro)
+                                .setPositiveButton("OK, entendi", null)
+                                .show();
                     });
                 }
             });
@@ -1389,8 +1492,7 @@ public class MainActivity extends AppCompatActivity {
                         TextView txtRota = new TextView(MainActivity.this);
 
                         String texto =
-                                "🚛 Rota " + (i + 1)
-                                        + "\n📅 " + DataHora.formatarData(rota.data_rota)
+                                "\n📅 " + DataHora.formatarData(rota.data_rota)
                                         + "\n▶ " + rota.rua_icinio
                                         + "\n🏁 " + rota.rua_final
                                         + "\n✅ " + rota.sit;
@@ -1451,7 +1553,7 @@ public class MainActivity extends AppCompatActivity {
 
                     AlertDialog dialog =
                             new AlertDialog.Builder(MainActivity.this)
-                                    .setTitle("Minhas rotas realizadas")
+                                    .setTitle("Rotas Realizadas")
                                     .setIcon(R.drawable.ic_success)
                                     .setView(scrollView)
                                     .setPositiveButton("Fechar", null)
@@ -1493,21 +1595,48 @@ public class MainActivity extends AppCompatActivity {
         String detalhes =
                 "📅 Data: " + DataHora.formatarData(rota.data_rota)
                         + "\n\n✅ Situação: " + rota.sit
-                        + "\n\n👤 Motorista: " + rota.motorista
+                        + "\n\n🗺️ Inicio: " + rota.rua_icinio
+                        + "\n\n🗺️ Fim: " + rota.rua_final
                         + "\n\n🚛 Veículo: " + rota.veiculo
-                        + "\n\n🛣️ Percorrido: "
-                        + df.format(rota.km_percorrido) + " Km";
+                        + "\n\n🛣️ Percorrido: " + df.format(rota.km_percorrido) + " Km";
 
-        new AlertDialog.Builder(MainActivity.this)
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle("Detalhes da rota")
                 .setMessage(detalhes)
 
-                .setNeutralButton("🗺️ Ver trajeto", (dialog, which) -> {
+                .setNeutralButton("Trajeto", (d, which) -> {
                     abrirMapaRota(rota);
                 })
 
                 .setPositiveButton("Fechar", null)
-                .show();
+                .create();
+
+        dialog.setOnShowListener(d -> {
+
+            // Procura o painel onde ficam os botões
+            int id = getResources().getIdentifier(
+                    "buttonPanel",
+                    "id",
+                    "android"
+            );
+
+            View buttonPanel = dialog.findViewById(id);
+
+            if (buttonPanel != null) {
+
+                GradientDrawable fundo = new GradientDrawable();
+
+                // Fundo transparente
+                fundo.setColor(Color.TRANSPARENT);
+
+                // Linha/divisor
+                fundo.setStroke(1, Color.BLACK);
+
+                buttonPanel.setBackground(fundo);
+            }
+        });
+
+        dialog.show();
     }
 
     private void abrirMapaRota(RotaModel rota) {

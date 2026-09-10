@@ -44,7 +44,7 @@ android {
 
         variant.outputs.all { output ->
 
-            def apkName = "TiraEntulho.apk"
+            def apkName = "Tira Entulho.apk"
 
             output.outputFileName = apkName
         }

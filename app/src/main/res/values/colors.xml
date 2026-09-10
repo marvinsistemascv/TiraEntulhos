@@ -6,7 +6,7 @@
     <color name="cinza">#D2D1D1</color>
     <color name="laranja">#FF6E40</color>
     <color name="alert_orange">#FF6E40</color>
-    <color name="zxing_viewfinder_mask">#88000000</color>  <!-- fundo escuro -->
+    <color name="zxing_viewfinder_mask">#88D9D9D9</color>  <!-- fundo escuro -->
     <color name="zxing_viewfinder_laser">#00FFFFFF</color> <!-- sem laser (transparente) -->
     <color name="zxing_possible_result_points">#00FFFFFF</color>
 </resources>
