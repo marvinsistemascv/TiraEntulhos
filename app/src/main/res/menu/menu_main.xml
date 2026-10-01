@@ -18,5 +18,10 @@
             android:id="@+id/menu_option_2"
             android:title="Resincronizar"/>
     </group>
+    <group android:id="@+id/grupo_compartilhar_app">
+        <item
+            android:id="@+id/menu_option_3"
+            android:title="Compartilhar App"/>
+    </group>
 
 </menu>

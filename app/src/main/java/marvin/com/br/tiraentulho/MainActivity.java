@@ -1156,6 +1156,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void encerrarPercurso() {
 
+        if (rota_ativa == null) {
+            showToastErro("Nenhuma rota em andamento.");
+            return;
+        }
+
         rota_ativa.sit = "FINALIZADO";
         rota_ativa.km_percorrido = kmPercorridoFinal;
         rota_ativa.bairro_final = bairroFinal;
@@ -1165,14 +1170,35 @@ public class MainActivity extends AppCompatActivity {
         rota_ativa.cidade_final = cidadeFinal;
 
         io.execute(() -> {
+
             try {
+
                 db.rotaDAO().inserir(rota_ativa);
+
                 runOnUiThread(() -> {
+
+                    // PARA O GPS / FOREGROUND SERVICE
+                    pararServicoRastreamento();
+
+                    // MUITO IMPORTANTE
+                    rota_ativa = null;
+
+                    Toast.makeText(
+                            getApplicationContext(),
+                            "Percurso encerrado!",
+                            Toast.LENGTH_LONG
+                    ).show();
+
                     sincronizar_cadastros();
-                    Toast.makeText(getApplicationContext(), "Percurso encerrado!", Toast.LENGTH_LONG).show();
                 });
+
             } catch (Exception e) {
-                runOnUiThread(() -> showToastErro("Erro ao finalizar percurso : " + e.getMessage())
+
+                runOnUiThread(() ->
+                        showToastErro(
+                                "Erro ao finalizar percurso: "
+                                        + e.getMessage()
+                        )
                 );
             }
         });
@@ -1236,6 +1262,68 @@ public class MainActivity extends AppCompatActivity {
                     .setNegativeButton("Cancelar", (d, which) -> d.dismiss())
                     .show();
 
+
+            return true;
+        }
+        if (id == R.id.menu_option_3) {
+
+            // Cria o ImageView que exibirá o QR Code
+            ImageView qrCode = new ImageView(this);
+
+            qrCode.setImageResource(
+                    R.drawable.qrcode_tira_entulho
+            );
+
+            // Tamanho do QR Code
+            int tamanho = dpToPx(260);
+
+            qrCode.setLayoutParams(
+                    new LinearLayout.LayoutParams(
+                            tamanho,
+                            tamanho
+                    )
+            );
+
+            qrCode.setAdjustViewBounds(true);
+            qrCode.setScaleType(
+                    ImageView.ScaleType.FIT_CENTER
+            );
+
+            // Container para conseguirmos dar margem
+            LinearLayout container =
+                    new LinearLayout(this);
+
+            container.setOrientation(
+                    LinearLayout.VERTICAL
+            );
+
+            container.setGravity(
+                    android.view.Gravity.CENTER
+            );
+
+            int margem = dpToPx(20);
+
+            container.setPadding(
+                    margem,
+                    dpToPx(10),
+                    margem,
+                    dpToPx(10)
+            );
+
+            container.addView(qrCode);
+
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Compartilhar App")
+                    .setMessage(
+                            "Aponte a câmera do outro celular para o QR Code abaixo para baixar o aplicativo."
+                    )
+                    .setView(container)
+                    .setPositiveButton(
+                            "Fechar",
+                            null
+                    )
+                    .show();
 
             return true;
         }
@@ -1495,6 +1583,8 @@ public class MainActivity extends AppCompatActivity {
                                 "\n📅 " + DataHora.formatarData(rota.data_rota)
                                         + "\n▶ " + rota.rua_icinio
                                         + "\n🏁 " + rota.rua_final
+                                        + "\n🚛 " + rota.veiculo
+                                        + "\n📏 " + String.format(Locale.US, "%.2f", rota.km_percorrido) + " km"
                                         + "\n✅ " + rota.sit;
 
                         txtRota.setText(texto);
@@ -1694,5 +1784,20 @@ public class MainActivity extends AppCompatActivity {
                 );
             }
         });
+    }
+
+    private void pararServicoRastreamento() {
+
+        Intent intent = new Intent(
+                this,
+                RastreamentoService.class
+        );
+
+        stopService(intent);
+
+        android.util.Log.i(
+                "TIRA_ENTULHO",
+                "Serviço de rastreamento encerrado"
+        );
     }
 }
